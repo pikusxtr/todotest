@@ -1,9 +1,11 @@
 package todotest.pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindAll;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -13,27 +15,31 @@ import java.util.stream.Collectors;
 import static todotest.config.Configuration.TIME_OUT_IN_SECONDS;
 
 public class TodoMainPage {
+  @FindBy(css = "input.new-todo")
+  WebElement todoInput;
+
+  @FindAll({@FindBy(css = "ul.todo-list>li label")})
+  List<WebElement> listElementLabels;
+
   WebDriver driver;
   WebDriverWait wait;
 
   public TodoMainPage(WebDriver driver) {
     this.driver = driver;
     this.wait = new WebDriverWait(driver, TIME_OUT_IN_SECONDS);
+    PageFactory.initElements(driver, this);
   }
-
-  private final By todoInputLocator = By.cssSelector("input.new-todo");
-  private final By listElementLabelLocator = By.cssSelector("ul.todo-list>li label");
 
   public void createListElements(List<String> elementsToCreate) {
     elementsToCreate.forEach(element -> {
-      WebElement todoInput = getVisibleElementWithWait(todoInputLocator);
+      WebElement todoInput = getVisibleElementWithWait(this.todoInput);
       todoInput.sendKeys(element);
       todoInput.sendKeys(Keys.RETURN);
     });
   }
 
   public List<String> getListElementNames() {
-    List<WebElement> elementsList = getVisibleElementsWithWait(listElementLabelLocator);
+    List<WebElement> elementsList = getVisibleElementsWithWait(listElementLabels);
     return elementsList
             .stream()
             .map(WebElement::getText)
@@ -41,13 +47,13 @@ public class TodoMainPage {
   }
 
 
-  private WebElement getVisibleElementWithWait(By locator) {
+  private WebElement getVisibleElementWithWait(WebElement webElement) {
     return wait
-            .until(ExpectedConditions.visibilityOfElementLocated(locator));
+            .until(ExpectedConditions.visibilityOf(webElement));
   }
 
-  private List<WebElement> getVisibleElementsWithWait(By locator) {
+  private List<WebElement> getVisibleElementsWithWait(List<WebElement> webElements) {
     return wait
-            .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(locator));
+            .until(ExpectedConditions.visibilityOfAllElements(webElements));
   }
 }
